@@ -20,8 +20,15 @@ Then you're good to go and you can add it to your project definitions. Add this 
 addSbtPlugin("org.duhemm" % "sbt-anybar" % "0.1.0-SNAPSHOT")
 ```
 
-And this to your `build.sbt`:
+You can now tell AnyBar to show you the results for the tasks you want:
 
 ```
-lazy val yourProject = (project in ...) enablePlugins (AnyBarPlugin)
+lazy val myProject =
+  (project in file(...)) settings (
+    ...
+    commands += showResultOf(test in Test),
+    ...
+  )
 ```
+
+You can give any `TaskKey[_]` to `showResultOf`: Whenever you will run this task, the plugin will intercept the call and show the result in AnyBar.
