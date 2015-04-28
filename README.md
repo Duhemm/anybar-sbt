@@ -6,18 +6,10 @@ Currently this is the only thing that the plugin does, but the ultimate goal is 
 
 ## Installation
 
-This is an AutoPlugin. Unfortunately, it is not yet published anywhere, which means that you will need to clone this repository, build it and publish the plugin locally. You can do it this way:
+Add this in your `project/plugins.sbt`:
 
 ```
-$ git clone https://github.com/Duhemm/anybar-sbt.git
-$ cd anybar-sbt
-$ sbt publishLocal
-```
-
-Then you're good to go and you can add it to your project definitions. Add this in your `project/plugins.sbt`:
-
-```
-addSbtPlugin("com.github.duhemm" % "sbt-anybar" % "0.1.0-SNAPSHOT")
+addSbtPlugin("com.github.duhemm" % "sbt-anybar" % "0.0.1")
 ```
 
 You can now tell AnyBar to show you the results for the tasks you want:
