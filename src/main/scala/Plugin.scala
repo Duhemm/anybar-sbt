@@ -11,6 +11,37 @@ object AnyBarPlugin extends AutoPlugin {
   override def requires = empty
   override def trigger = allRequirements
 
+  object autoImport {
+    def showResultOf[T](task: TaskKey[T]) = {
+      val name = task.key.label
+      Command.command(name) { (state: State) =>
+
+        // Reinitialize the bubble
+        send("question")
+
+        // Evaluate the task
+        // None if the key is not defined
+        // Some(Inc) if the task does not complete successfully (Inc for incomplete)
+        // Some(Value(v)) with the resulting value
+        val result = Project.evaluateTask(task, state)
+
+        // handle the result
+        result match {
+          case None =>
+            send("black")
+
+          case Some(Inc(inc)) =>
+            send("red")
+
+          case Some(Value(v)) =>
+            send("green")
+        }
+
+        state
+      }
+    }
+  }
+
   private val anyBarDefaultLocations = List(
     "/Applications/",
     System.getProperty("user.home") + "/Applications/",
@@ -71,32 +102,7 @@ object AnyBarPlugin extends AutoPlugin {
   val anyBarLocation = setupPlugin()
   Process(Seq(anyBarLocation + "/AnyBar.app/Contents/MacOS/Anybar", "&&", instanceIdentifier), None, ("ANYBAR_PORT", port.toString)).run
 
-  override def projectSettings = Seq(commands += testCommand, onUnload in Global ~= (registerExitHook compose _))
+  // Terminate this instance of AnyBar when exiting sbt
+  override def projectSettings = Seq(onUnload in Global ~= (registerExitHook compose _))
 
-  // Override the `test` command.
-  // This command will show a red bullet in AnyBar if the tests fail, and a shiny green ball if they succeed.
-  lazy val testCommand =
-    Command.command("test") { (state: State) =>
-      val taskKey = Keys.test in Test
-
-      // Evaluate the task
-      // None if the key is not defined
-      // Some(Inc) if the task does not complete successfully (Inc for incomplete)
-      // Some(Value(v)) with the resulting value
-      val result = Project.evaluateTask(taskKey, state)
-
-      // handle the result
-      result match {
-        case None =>
-          send("black")
-
-        case Some(Inc(inc)) =>
-          send("red")
-
-        case Some(Value(v)) =>
-          send("green")
-      }
-
-      state
-    }
 }
