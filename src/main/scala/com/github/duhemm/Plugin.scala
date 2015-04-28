@@ -1,3 +1,5 @@
+package com.github.duhemm
+
 import sbt._
 import Keys._
 

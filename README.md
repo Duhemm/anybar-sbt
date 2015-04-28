@@ -17,7 +17,7 @@ $ sbt publishLocal
 Then you're good to go and you can add it to your project definitions. Add this in your `project/plugins.sbt`:
 
 ```
-addSbtPlugin("org.duhemm" % "sbt-anybar" % "0.1.0-SNAPSHOT")
+addSbtPlugin("com.github.duhemm" % "sbt-anybar" % "0.1.0-SNAPSHOT")
 ```
 
 You can now tell AnyBar to show you the results for the tasks you want:
