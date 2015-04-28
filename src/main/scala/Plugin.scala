@@ -8,6 +8,9 @@ import java.net.URL
 
 object AnyBarPlugin extends AutoPlugin {
 
+  override def requires = empty
+  override def trigger = allRequirements
+
   private val anyBarDefaultLocations = List(
     "/Applications/",
     System.getProperty("user.home") + "/Applications/",
@@ -68,7 +71,7 @@ object AnyBarPlugin extends AutoPlugin {
   val anyBarLocation = setupPlugin()
   Process(Seq(anyBarLocation + "/AnyBar.app/Contents/MacOS/Anybar", "&&", instanceIdentifier), None, ("ANYBAR_PORT", port.toString)).run
 
-  override def projectSettings = Seq(commands += testCommand, onLoad in Global ~= (registerExitHook compose _))
+  override def projectSettings = Seq(commands += testCommand, onUnload in Global ~= (registerExitHook compose _))
 
   // Override the `test` command.
   // This command will show a red bullet in AnyBar if the tests fail, and a shiny green ball if they succeed.
