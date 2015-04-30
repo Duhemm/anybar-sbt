@@ -14,34 +14,13 @@ object AnyBarPlugin extends AutoPlugin {
   override def trigger = allRequirements
 
   object autoImport {
-    def showResultOf[T](task: TaskKey[T]) = {
-      val name = task.key.label
-      Command.command(name) { (state: State) =>
 
-        // Reinitialize the bubble
-        send("question")
-
-        // Evaluate the task
-        // None if the key is not defined
-        // Some(Inc) if the task does not complete successfully (Inc for incomplete)
-        // Some(Value(v)) with the resulting value
-        val result = Project.evaluateTask(task, state)
-
-        // handle the result
-        result match {
-          case None =>
-            send("black")
-
-          case Some(Inc(inc)) =>
-            send("red")
-
-          case Some(Value(v)) =>
-            send("green")
-        }
-
-        state
-      }
+    object AnyBar {
+      def newInstance = AnyBarInstance(1000 + scala.util.Random.nextInt(1000), true)
+      def newInstanceOnPort(port: Int) = AnyBarInstance(port, true)
+      def alreadyRunningOnPort(port: Int) = AnyBarInstance(port, false)
     }
+
   }
 
   private val anyBarDefaultLocations = List(
@@ -79,20 +58,11 @@ object AnyBarPlugin extends AutoPlugin {
   }
 
   /**
-   * Sends `word` to anybar.
-   */
-  private def send(word: String): Unit = {
-    val bytes = word.getBytes
-    val packet = new DatagramPacket(bytes, bytes.length, addr, port)
-    sock.send(packet)
-  }
-
-  /**
    * Adds an `ExitHook` to sbt so that sbt will kill the current instance of AnyBar when exiting.
    */
   def registerExitHook: State => State = (s: State) => {
     s.addExitHook {
-      Process(Seq("pgrep", "-f", instanceIdentifier)).lines.headOption map (pid => Process("kill " + pid).!)
+      launchedInstances foreach (_.exit)
     }
   }
 
@@ -102,7 +72,9 @@ object AnyBarPlugin extends AutoPlugin {
   // Yes, this is an ugly hack :)
   // TODO: Find a better place to put AnyBar
   val anyBarLocation = setupPlugin()
-  Process(Seq(anyBarLocation + "/AnyBar.app/Contents/MacOS/Anybar", "&&", instanceIdentifier), None, ("ANYBAR_PORT", port.toString)).run
+
+  private var launchedInstances: List[AnyBarInstance] = Nil
+  def addInstance(instance: AnyBarInstance) = launchedInstances ::= instance
 
   // Terminate this instance of AnyBar when exiting sbt
   override def projectSettings = Seq(onUnload in Global ~= (registerExitHook compose _))
